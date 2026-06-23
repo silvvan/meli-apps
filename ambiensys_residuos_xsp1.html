@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Ambiensys — Resíduos XSP1</title>
+<style>
+  :root {
+    --green: #00c853;
+    --green-dark: #009624;
+    --dark: #0d1f0d;
+    --dark2: #122012;
+    --card2: #172a17;
+    --text: #f0f0f0;
+    --text2: #88aa88;
+    --success: #48bb78;
+    --success-bg: #1a3a2a;
+    --red: #fc8181;
+    --red-bg: #3a1a1a;
+    --border: rgba(255,255,255,0.08);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--dark); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  .header { background: var(--dark2); border-bottom: 2px solid var(--green); padding: 14px 16px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  .header-logo { width: 36px; height: 36px; background: var(--green); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 11px; color: #000; flex-shrink: 0; text-align: center; line-height: 1.2; }
+  .header-title { font-size: 15px; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .header-sub { font-size: 11px; color: var(--text2); }
+  .header-shift { margin-left: auto; background: var(--green); color: #000; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+
+  .nav { display: flex; background: var(--dark2); border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-btn { flex-shrink: 0; padding: 12px 16px; font-size: 12px; font-weight: 600; color: var(--text2); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; white-space: nowrap; }
+  .nav-btn.active { color: var(--green); border-bottom-color: var(--green); }
+
+  .page { display: none; padding: 16px; max-width: 680px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  .card { background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--green); margin-bottom: 12px; text-transform: uppercase; letter-spacing: .05em; display: flex; align-items: center; gap: 8px; }
+
+  label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; margin-top: 12px; }
+  label:first-child { margin-top: 0; }
+  input[type=text], input[type=date], input[type=number], textarea, select {
+    width: 100%; background: var(--dark); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    color: var(--text); font-size: 14px; padding: 10px 12px; outline: none; transition: border .2s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--green); }
+  textarea { resize: vertical; min-height: 72px; }
+  select option { background: var(--dark2); }
+
+  .yn-row { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+  .yn-btn { flex: 1; padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--dark); color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; text-align: center; }
+  .yn-btn.yes.active { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+  .yn-btn.no.active { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+  .yn-obs { flex: 2; }
+
+  .equip-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .equip-row:last-child { border-bottom: none; }
+  .equip-name { flex: 1; font-size: 13px; }
+  .st-btn { padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid var(--border); background: var(--dark); color: var(--text2); cursor: pointer; transition: all .15s; }
+  .st-btn.concluido.active { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+  .st-btn.pendente.active { background: var(--red-bg); border-color: var(--red); color: var(--red); }
+
+  .counter-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .counter-row:last-child { border-bottom: none; }
+  .counter-row label { margin: 0; flex: 1; font-size: 13px; color: var(--text); }
+  input.cnt-input { width: 60px; text-align: center; padding: 6px 4px; font-size: 14px; font-weight: 700; }
+
+  .photo-area { border: 2px dashed var(--border); border-radius: var(--radius); padding: 16px; text-align: center; cursor: pointer; transition: border .2s; margin-top: 8px; }
+  .photo-area:hover { border-color: var(--green); }
+  .photo-area input { display: none; }
+  .photo-area p { font-size: 13px; color: var(--text2); margin-top: 8px; }
+  .photo-previews { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .photo-previews img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+
+  .btn { width: 100%; padding: 14px; border-radius: var(--radius); font-size: 15px; font-weight: 700; border: none; cursor: pointer; transition: all .2s; margin-top: 8px; }
+  .btn-primary { background: var(--green); color: #000; }
+  .btn-primary:hover { opacity: .9; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+  .btn-outline:hover { border-color: var(--green); color: var(--green); }
+  .btn-sm { width: auto; padding: 8px 16px; font-size: 13px; margin-top: 0; }
+
+  .section-divider { font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: .08em; margin: 18px 0 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+
+  .record-card { background: var(--dark2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; }
+  .record-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .record-type { font-size: 11px; font-weight: 700; color: var(--green); text-transform: uppercase; }
+  .record-date { font-size: 11px; color: var(--text2); }
+  .record-thumb { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+  .record-thumb img { width: 48px; height: 48px; object-fit: cover; border-radius: 6px; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-right: 4px; }
+  .badge-diurno { background: rgba(0,200,83,.15); color: var(--green); }
+  .badge-noturno { background: rgba(100,180,100,.12); color: #8bc; }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text2); font-size: 14px; }
+  .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--green); color: #000; font-weight: 700; font-size: 14px; padding: 12px 24px; border-radius: 30px; z-index: 999; opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+  @media (max-width: 400px) { .input-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">AMB</div>
+  <div>
+    <div class="header-title">Ambiensys — XSP1</div>
+    <div class="header-sub">Gestão de Resíduos</div>
+  </div>
+  <div class="header-shift" id="shift-badge">Carregando...</div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="goTo('home')">🏠 Início</button>
+  <button class="nav-btn" onclick="goTo('dds')">📋 DDS</button>
+  <button class="nav-btn" onclick="goTo('residuos')">♻️ Resíduos</button>
+  <button class="nav-btn" onclick="goTo('historico')">📁 Histórico</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <div class="card">
+    <div class="card-title">⏱ Turno atual</div>
+    <div class="input-row">
+      <div>
+        <label>Data</label>
+        <input type="date" id="home-data">
+      </div>
+      <div>
+        <label>Turno</label>
+        <select id="home-turno" onchange="updateShiftBadge()">
+          <option value="Diurno">☀️ Diurno</option>
+          <option value="Vespertino">🌇 Vespertino</option>
+          <option value="Noturno">🌙 Noturno</option>
+        </select>
+      </div>
+    </div>
+    <label>Colaborador saindo</label>
+    <input type="text" id="home-saindo" placeholder="Nome">
+    <label>Colaborador entrando</label>
+    <input type="text" id="home-entrando" placeholder="Nome">
+  </div>
+
+  <div class="card">
+    <div class="card-title">📌 Preencher hoje</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="btn btn-outline" onclick="goTo('dds')">📋 DDS — Diálogo Diário de Segurança</button>
+      <button class="btn btn-outline" onclick="goTo('residuos')">♻️ Passagem de Turno — Resíduos</button>
+      <button class="btn btn-outline" onclick="goTo('historico')">📁 Ver registros anteriores</button>
+    </div>
+  </div>
+
+  <div class="card" id="home-summary" style="display:none;">
+    <div class="card-title">✅ Registros de hoje</div>
+    <div id="home-summary-content"></div>
+  </div>
+</div>
+
+<!-- DDS -->
+<div class="page" id="page-dds">
+  <div class="card">
+    <div style="text-align:center;font-size:40px;padding:12px 0 4px;">📋</div>
+    <div class="card-title" style="justify-content:center;">DDS — Diálogo Diário de Segurança</div>
+
+    <label>Tema do DDS</label>
+    <input type="text" id="dds-tema" placeholder="Ex: Descarte correto de resíduos perigosos...">
+    <label>Responsável pelo DDS</label>
+    <input type="text" id="dds-responsavel" placeholder="Nome do responsável">
+    <label>Quantidade de participantes</label>
+    <input type="number" id="dds-participantes" placeholder="Ex: 6" min="0">
+    <label>Resumo / Pontos abordados</label>
+    <textarea id="dds-resumo" placeholder="Descreva o que foi abordado..."></textarea>
+
+    <div class="section-divider">Foto de evidência</div>
+    <div class="photo-area" onclick="document.getElementById('dds-foto-input').click()">
+      <input type="file" id="dds-foto-input" accept="image/*" multiple onchange="previewPhotos(this,'dds-previews')">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00c853" stroke-width="1.5" style="margin:0 auto;display:block"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <p>Toque para tirar foto ou selecionar da galeria</p>
+    </div>
+    <div class="photo-previews" id="dds-previews"></div>
+    <button class="btn btn-primary" onclick="saveDDS()" style="margin-top:16px;">Salvar DDS</button>
+  </div>
+</div>
+
+<!-- RESÍDUOS -->
+<div class="page" id="page-residuos">
+  <div class="card">
+    <div class="card-title">♻️ Gestão de Resíduos</div>
+
+    <div class="section-divider">✅ Checklist do Plantão</div>
+    <div id="residuos-checklist"></div>
+
+    <div class="section-divider">🗑️ Lixo Comum</div>
+    <div id="lixo-comum"></div>
+
+    <div class="section-divider">🔵 Plástico</div>
+    <div id="plastico"></div>
+
+    <div class="section-divider">📦 Papelão</div>
+    <div id="papelao"></div>
+
+    <div class="section-divider">🪵 Paletes</div>
+    <div class="counter-row">
+      <label>Paletes na seção</label>
+      <input class="cnt-input" type="number" id="paletes-qtd" value="0" min="0">
+    </div>
+
+    <div class="section-divider">📊 Capacidade dos Equipamentos</div>
+    <div id="capacidade-equips"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔧 Equipamentos</div>
+    <div id="equips-residuos"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚠️ Ocorrências</div>
+    <label>Manutenção</label>
+    <textarea id="res-manutencao" placeholder="Pendências de manutenção..."></textarea>
+    <label>Pendência crítica</label>
+    <textarea id="res-pendencia" placeholder="Pendências críticas..."></textarea>
+
+    <div class="section-divider">Foto de evidência</div>
+    <div class="photo-area" onclick="document.getElementById('res-foto-input').click()">
+      <input type="file" id="res-foto-input" accept="image/*" multiple onchange="previewPhotos(this,'res-previews')">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00c853" stroke-width="1.5" style="margin:0 auto;display:block"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      <p>Toque para tirar foto ou selecionar da galeria</p>
+    </div>
+    <div class="photo-previews" id="res-previews"></div>
+    <button class="btn btn-primary" onclick="saveResiduos()" style="margin-top:16px;">Salvar Gestão de Resíduos</button>
+  </div>
+</div>
+
+<!-- HISTÓRICO -->
+<div class="page" id="page-historico">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <span style="font-size:14px;font-weight:700;">Registros salvos</span>
+    <button class="btn btn-outline btn-sm" onclick="clearHistory()">Limpar tudo</button>
+  </div>
+  <div id="historico-list"></div>
+</div>
+
+<script>
+const CHECKLIST = [
+  "Área limpa e organizada?",
+  "Insumos disponíveis?",
+  "Coleta de orgânico realizada?",
+  "Resíduos fora da área?",
+  "Área de perigosos organizada?",
+  "Paletes organizados?",
+  "Paletes de contenção limpos?",
+];
+const CAPACIDADE = ["Caçamba de Papelão","Caçamba de Plástico","Caçambas de Madeira","Caçamba de Lixo"];
+const EQUIPS = ["Caçamba","Bombonas"];
+const photoStore = {};
+
+function init() {
+  document.getElementById('home-data').value = new Date().toISOString().split('T')[0];
+  updateShiftBadge();
+  buildChecklist();
+  buildContadores();
+  buildCapacidade();
+  buildEquips();
+  renderHistory();
+  checkTodaySummary();
+}
+
+function updateShiftBadge() {
+  const t = document.getElementById('home-turno').value;
+  document.getElementById('shift-badge').textContent = t === 'Diurno' ? '☀️ Diurno' : t === 'Vespertino' ? '🌇 Vespertino' : '🌙 Noturno';
+}
+
+function buildChecklist() {
+  document.getElementById('residuos-checklist').innerHTML = CHECKLIST.map((q, i) => `
+    <div style="margin-bottom:12px;">
+      <div style="font-size:13px;margin-bottom:4px;">${q}</div>
+      <div class="yn-row">
+        <button class="yn-btn yes" data-ck="${i}" data-val="sim" onclick="toggleYN(this)">Sim</button>
+        <button class="yn-btn no" data-ck="${i}" data-val="nao" onclick="toggleYN(this)">Não</button>
+        <input type="text" class="yn-obs" placeholder="Observação..." style="font-size:12px;padding:7px 10px;" id="ck-obs-${i}">
+      </div>
+    </div>`).join('');
+}
+
+function toggleYN(btn) {
+  const g = btn.dataset.ck;
+  document.querySelectorAll(`[data-ck="${g}"]`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function buildContadores() {
+  document.getElementById('lixo-comum').innerHTML = [
+    {id:'lc-gaiolas-desc', label:'Gaiolas de lixo descartadas'},
+    {id:'lc-gaiolas-cheias', label:'Gaiolas cheias'},
+    {id:'lc-lixeiras-cheias', label:'Lixeiras cheias'},
+    {id:'lc-lixeiras-vazias', label:'Lixeiras vazias'},
+  ].map(c => `<div class="counter-row"><label>${c.label}</label><input class="cnt-input" type="number" id="${c.id}" value="0" min="0"></div>`).join('');
+
+  document.getElementById('plastico').innerHTML = [
+    {id:'pl-gaylords', label:'Gaylords/gaiolas descartadas'},
+    {id:'pl-lixeiras', label:'Lixeiras de plástico feitas'},
+  ].map(c => `<div class="counter-row"><label>${c.label}</label><input class="cnt-input" type="number" id="${c.id}" value="0" min="0"></div>`).join('');
+
+  document.getElementById('papelao').innerHTML = [
+    {id:'pp-gaylords', label:'Gaylords/gaiolas descartadas'},
+    {id:'pp-lixeiras', label:'Lixeiras de papelão feitas'},
+    {id:'pp-ficaram', label:'Resíduos que ficaram'},
+  ].map(c => `<div class="counter-row"><label>${c.label}</label><input class="cnt-input" type="number" id="${c.id}" value="0" min="0"></div>`).join('');
+}
+
+function buildCapacidade() {
+  document.getElementById('capacidade-equips').innerHTML = CAPACIDADE.map(c => `
+    <div class="equip-row">
+      <span class="equip-name">${c}</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input type="number" min="0" max="100" value="0" style="width:60px;padding:6px 8px;font-size:13px;" id="cap-${c.replace(/\s/g,'')}">
+        <span style="font-size:12px;color:var(--text2)">%</span>
+      </div>
+    </div>`).join('');
+}
+
+function buildEquips() {
+  document.getElementById('equips-residuos').innerHTML = EQUIPS.map(e => `
+    <div class="equip-row">
+      <span class="equip-name">${e}</span>
+      <div style="display:flex;gap:4px;">
+        <button class="st-btn concluido" data-eq="res-${e}" data-val="ok" onclick="toggleStatus(this)">OK</button>
+        <button class="st-btn pendente" data-eq="res-${e}" data-val="defeito" onclick="toggleStatus(this)">Defeito</button>
+      </div>
+    </div>`).join('');
+}
+
+function toggleStatus(btn) {
+  const g = btn.dataset.eq;
+  document.querySelectorAll(`[data-eq="${g}"]`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function previewPhotos(input, previewId) {
+  const container = document.getElementById(previewId);
+  if (!photoStore[previewId]) photoStore[previewId] = [];
+  Array.from(input.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      photoStore[previewId].push(e.target.result);
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      container.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function getBase() {
+  return {
+    data: document.getElementById('home-data').value,
+    turno: document.getElementById('home-turno').value,
+    saindo: document.getElementById('home-saindo').value,
+    entrando: document.getElementById('home-entrando').value,
+    ts: Date.now()
+  };
+}
+
+function saveDDS() {
+  const r = { ...getBase(), tipo:'DDS',
+    tema: document.getElementById('dds-tema').value,
+    responsavel: document.getElementById('dds-responsavel').value,
+    participantes: document.getElementById('dds-participantes').value,
+    resumo: document.getElementById('dds-resumo').value,
+    fotos: photoStore['dds-previews'] || [],
+  };
+  storeRecord(r);
+  showToast('DDS salvo!');
+}
+
+function saveResiduos() {
+  const checklist = CHECKLIST.map((q, i) => {
+    const active = document.querySelector(`[data-ck="${i}"].active`);
+    return {pergunta:q, resposta: active ? active.dataset.val : 'nao-informado', obs: document.getElementById('ck-obs-'+i).value};
+  });
+  const cap = {};
+  CAPACIDADE.forEach(c => { cap[c] = document.getElementById('cap-'+c.replace(/\s/g,'')).value; });
+  const r = { ...getBase(), tipo:'Resíduos', checklist,
+    lixoComum: { desc: document.getElementById('lc-gaiolas-desc').value, cheias: document.getElementById('lc-gaiolas-cheias').value, lx_cheias: document.getElementById('lc-lixeiras-cheias').value, lx_vazias: document.getElementById('lc-lixeiras-vazias').value },
+    plastico: { gaylords: document.getElementById('pl-gaylords').value, lixeiras: document.getElementById('pl-lixeiras').value },
+    papelao: { gaylords: document.getElementById('pp-gaylords').value, lixeiras: document.getElementById('pp-lixeiras').value, ficaram: document.getElementById('pp-ficaram').value },
+    paletes: document.getElementById('paletes-qtd').value,
+    capacidade: cap,
+    manutencao: document.getElementById('res-manutencao').value,
+    pendencia: document.getElementById('res-pendencia').value,
+    fotos: photoStore['res-previews'] || [],
+  };
+  storeRecord(r);
+  showToast('Resíduos salvo!');
+}
+
+function storeRecord(record) {
+  const all = getAll();
+  all.unshift(record);
+  try { localStorage.setItem('amb_records', JSON.stringify(all)); } catch(e) {
+    const slim = all.map(r => ({...r, fotos:[]}));
+    localStorage.setItem('amb_records', JSON.stringify(slim));
+  }
+  renderHistory();
+  checkTodaySummary();
+}
+
+function getAll() {
+  try { return JSON.parse(localStorage.getItem('amb_records') || '[]'); } catch { return []; }
+}
+
+function clearHistory() {
+  if (confirm('Apagar todos os registros salvos?')) { localStorage.removeItem('amb_records'); renderHistory(); checkTodaySummary(); }
+}
+
+function renderHistory() {
+  const all = getAll();
+  const el = document.getElementById('historico-list');
+  if (!all.length) { el.innerHTML = '<div class="empty-state">Nenhum registro ainda.<br>Preencha um formulário para começar.</div>'; return; }
+  el.innerHTML = all.map(r => {
+    const badge = r.turno === 'Diurno' ? '<span class="badge badge-diurno">☀️ Diurno</span>' : '<span class="badge badge-noturno">🌙 Noturno</span>';
+    const tipo = r.tipo === 'DDS' ? '📋 DDS' : '♻️ Resíduos';
+    const thumbs = (r.fotos||[]).filter(f=>f.startsWith('data:')).slice(0,4).map(f=>`<img src="${f}">`).join('');
+    let detail = r.tipo === 'DDS'
+      ? `<div style="font-size:13px;">${r.tema||'—'} · ${r.participantes||0} participantes</div>`
+      : `<div style="font-size:13px;">${(r.checklist||[]).filter(c=>c.resposta==='nao').length} não conformidade(s)</div>`;
+    return `<div class="record-card">
+      <div class="record-header">
+        <div><span class="record-type">${tipo}</span> ${badge}</div>
+        <div style="font-size:11px;color:var(--text2);">${r.data||''}</div>
+      </div>
+      ${detail}
+      <div style="font-size:12px;color:var(--text2);margin-top:4px;">Saindo: ${r.saindo||'—'} → Entrando: ${r.entrando||'—'}</div>
+      ${thumbs ? `<div class="record-thumb">${thumbs}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function checkTodaySummary() {
+  const today = document.getElementById('home-data').value;
+  const all = getAll().filter(r => r.data === today);
+  const el = document.getElementById('home-summary');
+  const content = document.getElementById('home-summary-content');
+  if (!all.length) { el.style.display='none'; return; }
+  el.style.display='block';
+  const tipos = {DDS:false,'Resíduos':false};
+  all.forEach(r => { if (tipos.hasOwnProperty(r.tipo)) tipos[r.tipo]=true; });
+  content.innerHTML = Object.entries(tipos).map(([t, done]) =>
+    `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:16px;">${done?'✅':'⬜'}</span>
+      <span style="font-size:13px;${done?'color:var(--success)':''}">${t==='DDS'?'📋 DDS':'♻️ Gestão de Resíduos'}</span>
+    </div>`
+  ).join('');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = '✓ ' + msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function goTo(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => { if(b.getAttribute('onclick').includes("'"+page+"'")) b.classList.add('active'); });
+  window.scrollTo(0,0);
+}
+
+init();
+</script>
+</body>
+</html>
